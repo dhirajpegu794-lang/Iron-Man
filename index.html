@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Iron Man Repulsor Hands</title>
+<style>
+body{margin:0;background:#000;overflow:hidden}video,canvas{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}#txt{position:fixed;top:10px;left:10px;color:#fff;background:rgba(0,0,0,.45);padding:8px 10px;border-radius:10px;z-index:2;font-family:Arial}
+</style></head><body>
+<div id='txt'>Allow camera • Show open palms</div>
+<video id='video' autoplay playsinline muted></video><canvas id='canvas'></canvas>
+<script src='https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js'></script>
+<script>
+const v=document.getElementById('video'),c=document.getElementById('canvas'),x=c.getContext('2d');
+function rs(){c.width=innerWidth;c.height=innerHeight;} rs(); addEventListener('resize',rs);
+function circle(px,py,r,col){x.beginPath();x.arc(px,py,r,0,Math.PI*2);x.fillStyle=col;x.shadowBlur=30;x.shadowColor=col;x.fill();}
+function ring(px,py,r,col){x.beginPath();x.arc(px,py,r,0,Math.PI*2);x.strokeStyle=col;x.lineWidth=4;x.shadowBlur=20;x.shadowColor=col;x.stroke();}
+function beam(px,py){x.beginPath();x.moveTo(px,py);x.lineTo(px,c.height);x.strokeStyle='rgba(120,220,255,.8)';x.lineWidth=8;x.shadowBlur=25;x.shadowColor='#7cf';x.stroke();}
+const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
+hands.setOptions({maxNumHands:2,modelComplexity:1,minDetectionConfidence:.7,minTrackingConfidence:.7});
+hands.onResults(r=>{x.clearRect(0,0,c.width,c.height);x.drawImage(r.image,0,0,c.width,c.height);if(!r.multiHandLandmarks)return;for(const h of r.multiHandLandmarks){const palm=h[9];const px=(1-palm.x)*c.width, py=palm.y*c.height;for(let i=0;i<3;i++) ring(px,py,35+i*12,'#7cf');circle(px,py,22,'#bff');circle(px,py,10,'#fff');beam(px,py);}});
+const cam=new Camera(v,{onFrame:async()=>await hands.send({image:v}),width:1280,height:720});cam.start();
+</script></body></html>
